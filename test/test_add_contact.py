@@ -13,7 +13,7 @@ def app(request):
 
 def test_add_contact(app):
     app.open_home_page()
-    app.login(username="admin", password="secret")
+    app.session.login(username="admin", password="secret")
     app.open_add_contact_page()
     app.create_contact(
         Contact(firstname="first_name", middlename="middle_name", lastname="last_name", nickname="nickname",
@@ -22,12 +22,12 @@ def test_add_contact(app):
                 bday="4", bmonth="April", byear="1993", aday="13", amonth="March", ayear="1995", address2="address_2",
                 phone2="555555", notes="hello! :)"))
     app.return_to_home_page()
-    app.logout()
+    app.session.logout()
 
 
 def test_add_empty_contact(app):
     app.open_home_page()
-    app.login(username="admin", password="secret")
+    app.session.login(username="admin", password="secret")
     app.open_add_contact_page()
     app.create_contact(
         Contact(firstname="", middlename="", lastname="", nickname="", title="", company="", address="", home="",
@@ -35,4 +35,4 @@ def test_add_empty_contact(app):
                 aday="", amonth="-", ayear="",
                 address2="", phone2="", notes=""))
     app.return_to_home_page()
-    app.logout()
+    app.session.logout()
