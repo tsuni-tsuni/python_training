@@ -1,5 +1,6 @@
 from selenium.webdriver.support.ui import Select
 from model.contact import Contact
+import re
 
 
 class ContactHelper:
@@ -111,7 +112,8 @@ class ContactHelper:
 
     def return_to_home_page(self):
         wd = self.app.wd
-        if not (((wd.current_url.endswith("/addressbook/")) or (wd.current_url.endswith("/addressbook/index.php"))) and len(wd.find_elements_by_name("searchstring")) > 0):
+        if not (((wd.current_url.endswith("/addressbook/")) or (
+        wd.current_url.endswith("/addressbook/index.php"))) and len(wd.find_elements_by_name("searchstring")) > 0):
             wd.find_element_by_link_text("home page").click()
 
     contact_cache = None
@@ -122,8 +124,60 @@ class ContactHelper:
             self.app.open_home_page()
             self.contact_cache = []
             for element in wd.find_elements_by_xpath("//tr[@name='entry']"):
+                id = element.find_element_by_name("selected[]").get_attribute("value")
                 text_last = element.find_element_by_xpath("./td[2]").text
                 text_first = element.find_element_by_xpath("./td[3]").text
-                id = element.find_element_by_name("selected[]").get_attribute("value")
-                self.contact_cache.append(Contact(lastname=text_last, firstname=text_first, id=id))
+                address = element.find_element_by_xpath("./td[4]").text
+                all_emails = element.find_element_by_xpath("./td[5]").text
+                all_phones = element.find_element_by_xpath("./td[6]").text
+                self.contact_cache.append(Contact(id=id, lastname=text_last, firstname=text_first, address=address,
+                                                  all_emails_from_home_page=all_emails, all_phones_from_home_page=all_phones))
         return list(self.contact_cache)
+
+    def open_contact_to_view_by_index(self, index):
+        wd = self.app.wd
+        self.app.open_home_page()
+        row = wd.find_elements_by_name("entry")[index]
+        cell = row.find_elements_by_tag_name("td")[6]
+        cell.find_element_by_tag_name("a").click()
+
+    def open_contact_to_edit_by_index(self, index):
+        wd = self.app.wd
+        self.app.open_home_page()
+        row = wd.find_elements_by_name("entry")[index]
+        cell = row.find_elements_by_tag_name("td")[7]
+        cell.find_element_by_tag_name("a").click()
+
+    def get_contact_info_from_edit_page(self, index):
+        wd = self.app.wd
+        self.open_contact_to_edit_by_index(index)
+        id = wd.find_element_by_name("id").get_attribute("value")
+        firstname = wd.find_element_by_name("firstname").get_attribute("value")
+        lastname = wd.find_element_by_name("lastname").get_attribute("value")
+        address = wd.find_element_by_name("address").get_attribute("value")
+        home = wd.find_element_by_name("home").get_attribute("value")
+        mobile = wd.find_element_by_name("mobile").get_attribute("value")
+        work = wd.find_element_by_name("work").get_attribute("value")
+        phone2 = wd.find_element_by_name("phone2").get_attribute("value")
+        email = wd.find_element_by_name("email").get_attribute("value")
+        email2 = wd.find_element_by_name("email2").get_attribute("value")
+        email3 = wd.find_element_by_name("email3").get_attribute("value")
+        return Contact(firstname=firstname, lastname=lastname, address=address, id=id,
+                       home=home, mobile=mobile, work=work, phone2=phone2,
+                       email=email, email2=email2, email3=email3)
+
+    def get_contact_from_view_page(self, index):
+        wd = self.app.wd
+        self.open_contact_to_view_by_index(index)
+        text = wd.find_element_by_id("content").text
+        home = re.search("H: (.*)", text)
+        mobile = re.search("M: (.*)", text)
+        work = re.search("W: (.*)", text)
+        phone2 = re.search("P: (.*)", text)
+        return Contact(home=self.str_is_none(home), mobile=self.str_is_none(mobile), work=self.str_is_none(work), phone2=self.str_is_none(phone2))
+
+    def str_is_none(self, s):
+        if s:
+            return s.group(1)
+        else:
+            return ""
