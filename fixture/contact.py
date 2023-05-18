@@ -85,6 +85,22 @@ class ContactHelper:
         self.return_to_home_page()
         self.contact_cache = None
 
+    def modify_contact_by_id(self, id, new_contact_data):
+        wd = self.app.wd
+        l = self.count()
+        self.select_contact_by_id(id)
+        # open modification form
+        checkbox = wd.find_elements_by_name("selected[]")
+        for i in range(l):
+            if checkbox[i].get_attribute('checked'):
+                wd.find_elements_by_xpath("//img[@title='Edit']")[i].click()
+                break
+        self.fill_contact_form(new_contact_data)
+        # submit modification
+        wd.find_element_by_xpath("//input[@name='update']").click()
+        self.return_to_home_page()
+        self.contact_cache = None
+
     def select_first_contact(self):
         self.select_contact_by_index(0)
 
@@ -92,6 +108,11 @@ class ContactHelper:
         wd = self.app.wd
         self.app.open_home_page()
         wd.find_elements_by_name("selected[]")[index].click()
+
+    def select_contact_by_id(self, id):
+        wd = self.app.wd
+        self.app.open_home_page()
+        wd.find_element_by_css_selector("input[value='%s']" % id).click()
 
     def count(self):
         wd = self.app.wd
@@ -104,6 +125,15 @@ class ContactHelper:
     def delete_contact_by_index(self, index):
         wd = self.app.wd
         self.select_contact_by_index(index)
+        # submit deletion
+        wd.find_element_by_xpath("//input[@value='Delete']").click()
+        wd.switch_to.alert.accept()
+        self.app.open_home_page()
+        self.contact_cache = None
+
+    def delete_contact_by_id(self, id):
+        wd = self.app.wd
+        self.select_contact_by_id(id)
         # submit deletion
         wd.find_element_by_xpath("//input[@value='Delete']").click()
         wd.switch_to.alert.accept()
