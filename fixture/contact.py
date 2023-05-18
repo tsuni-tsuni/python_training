@@ -196,6 +196,30 @@ class ContactHelper:
                        home=home, mobile=mobile, work=work, phone2=phone2,
                        email=email, email2=email2, email3=email3)
 
+    def get_contacts_info_from_edit_page(self):
+        wd = self.app.wd
+        l = self.count()
+        contacts = []
+        for i in range(l):
+            self.open_contact_to_edit_by_index(i)
+            id = wd.find_element_by_name("id").get_attribute("value")
+            firstname = wd.find_element_by_name("firstname").get_attribute("value")
+            lastname = wd.find_element_by_name("lastname").get_attribute("value")
+            address = wd.find_element_by_name("address").get_attribute("value")
+            home = wd.find_element_by_name("home").get_attribute("value")
+            mobile = wd.find_element_by_name("mobile").get_attribute("value")
+            work = wd.find_element_by_name("work").get_attribute("value")
+            phone2 = wd.find_element_by_name("phone2").get_attribute("value")
+            email = wd.find_element_by_name("email").get_attribute("value")
+            email2 = wd.find_element_by_name("email2").get_attribute("value")
+            email3 = wd.find_element_by_name("email3").get_attribute("value")
+            contacts.append(
+                Contact(firstname=firstname, lastname=lastname, address=address, id=id,
+                        home=home, mobile=mobile, work=work, phone2=phone2,
+                        email=email, email2=email2, email3=email3))
+        return contacts
+
+
     def get_contact_from_view_page(self, index):
         wd = self.app.wd
         self.open_contact_to_view_by_index(index)
@@ -205,6 +229,20 @@ class ContactHelper:
         work = re.search("W: (.*)", text)
         phone2 = re.search("P: (.*)", text)
         return Contact(home=self.str_is_none(home), mobile=self.str_is_none(mobile), work=self.str_is_none(work), phone2=self.str_is_none(phone2))
+
+    def get_contacts_from_view_page(self):
+        wd = self.app.wd
+        l = self.count()
+        contacts = []
+        for i in range(l):
+            self.open_contact_to_view_by_index(i)
+            text = wd.find_element_by_id("content").text
+            home = re.search("H: (.*)", text)
+            mobile = re.search("M: (.*)", text)
+            work = re.search("W: (.*)", text)
+            phone2 = re.search("P: (.*)", text)
+            contacts.append(Contact(home=self.str_is_none(home), mobile=self.str_is_none(mobile), work=self.str_is_none(work), phone2=self.str_is_none(phone2)))
+        return contacts
 
     def str_is_none(self, s):
         if s:
