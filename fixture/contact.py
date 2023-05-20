@@ -114,6 +114,10 @@ class ContactHelper:
         self.app.open_home_page()
         wd.find_element_by_css_selector("input[value='%s']" % id).click()
 
+    def select_contact_in_group_by_id(self, id):
+        wd = self.app.wd
+        wd.find_element_by_css_selector("input[value='%s']" % id).click()
+
     def count(self):
         wd = self.app.wd
         self.app.open_home_page()
@@ -143,7 +147,8 @@ class ContactHelper:
     def return_to_home_page(self):
         wd = self.app.wd
         if not (((wd.current_url.endswith("/addressbook/")) or (
-        wd.current_url.endswith("/addressbook/index.php"))) and len(wd.find_elements_by_name("searchstring")) > 0):
+                wd.current_url.endswith("/addressbook/index.php"))) and len(
+            wd.find_elements_by_name("searchstring")) > 0):
             wd.find_element_by_link_text("home page").click()
 
     contact_cache = None
@@ -161,7 +166,8 @@ class ContactHelper:
                 all_emails = element.find_element_by_xpath("./td[5]").text
                 all_phones = element.find_element_by_xpath("./td[6]").text
                 self.contact_cache.append(Contact(id=id, lastname=text_last, firstname=text_first, address=address,
-                                                  all_emails_from_home_page=all_emails, all_phones_from_home_page=all_phones))
+                                                  all_emails_from_home_page=all_emails,
+                                                  all_phones_from_home_page=all_phones))
         return list(self.contact_cache)
 
     def open_contact_to_view_by_index(self, index):
@@ -219,7 +225,6 @@ class ContactHelper:
                         email=email, email2=email2, email3=email3))
         return contacts
 
-
     def get_contact_from_view_page(self, index):
         wd = self.app.wd
         self.open_contact_to_view_by_index(index)
@@ -228,7 +233,8 @@ class ContactHelper:
         mobile = re.search("M: (.*)", text)
         work = re.search("W: (.*)", text)
         phone2 = re.search("P: (.*)", text)
-        return Contact(home=self.str_is_none(home), mobile=self.str_is_none(mobile), work=self.str_is_none(work), phone2=self.str_is_none(phone2))
+        return Contact(home=self.str_is_none(home), mobile=self.str_is_none(mobile), work=self.str_is_none(work),
+                       phone2=self.str_is_none(phone2))
 
     def get_contacts_from_view_page(self):
         wd = self.app.wd
@@ -241,8 +247,50 @@ class ContactHelper:
             mobile = re.search("M: (.*)", text)
             work = re.search("W: (.*)", text)
             phone2 = re.search("P: (.*)", text)
-            contacts.append(Contact(home=self.str_is_none(home), mobile=self.str_is_none(mobile), work=self.str_is_none(work), phone2=self.str_is_none(phone2)))
+            contacts.append(
+                Contact(home=self.str_is_none(home), mobile=self.str_is_none(mobile), work=self.str_is_none(work),
+                        phone2=self.str_is_none(phone2)))
         return contacts
+
+    def add_contact_to_group(self, contact, group):
+        wd = self.app.wd
+        self.app.open_home_page()
+        self.select_contact_by_id(contact)
+        dropdown = Select(wd.find_element_by_name('to_group'))
+        dropdown.select_by_value(group)
+        group_name = dropdown.first_selected_option.text
+        wd.find_element_by_name('add').click()
+        wd.find_element_by_link_text('group page "%s"' % (group_name)).click()
+
+    def open_group_view_page_by_id(self, id):
+        wd = self.app.wd
+        self.app.open_home_page()
+        dropdown = Select(wd.find_element_by_name('group'))
+        dropdown.select_by_value(id)
+
+    def get_contacts_info_from_group_view_page(self):
+        wd = self.app.wd
+        contacts = []
+        for element in wd.find_elements_by_xpath("//tr[@name='entry']"):
+            id = element.find_element_by_name("selected[]").get_attribute("value")
+            text_last = element.find_element_by_xpath("./td[2]").text
+            text_first = element.find_element_by_xpath("./td[3]").text
+            address = element.find_element_by_xpath("./td[4]").text
+            all_emails = element.find_element_by_xpath("./td[5]").text
+            all_phones = element.find_element_by_xpath("./td[6]").text
+            contacts.append(Contact(id=id, lastname=text_last, firstname=text_first, address=address,
+                                    all_emails_from_home_page=all_emails, all_phones_from_home_page=all_phones))
+        return contacts
+
+    def delete_contact_from_group(self, contact, group):
+        wd = self.app.wd
+        self.app.open_home_page()
+        dropdown = Select(wd.find_element_by_name('group'))
+        dropdown.select_by_value(group)
+        # group_name = dropdown.first_selected_option.text
+        self.select_contact_in_group_by_id(contact)
+        wd.find_element_by_name('remove').click()
+        # wd.find_element_by_link_text('group page "%s"' % (group_name)).click()
 
     def str_is_none(self, s):
         if s:
