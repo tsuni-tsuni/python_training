@@ -8,7 +8,17 @@ def test_contact_info_on_home_page(app, db):
     if len(db.get_contact_list()) == 0:
         app.contact.create(Contact(lastname=generate_random_string(), firstname=generate_random_string(), address=generate_random_string(), home=generate_random_string(), email=generate_random_string()))
     contacts_from_home_page = app.contact.get_contact_list()
-    assert sorted(contacts_from_home_page, key=Contact.id_or_max) == sorted(db.get_contact_list(), key=Contact.id_or_max)
+    contacts_from_db = db.get_contact_list()
+    # compare home page & db
+    sorted_contacts_from_home_page = sorted(contacts_from_home_page, key=Contact.id_or_max)
+    sorted_contacts_from_db = sorted(contacts_from_db, key=Contact.id_or_max)
+    for i in range(len(contacts_from_home_page)):
+        assert sorted_contacts_from_home_page[i].lastname == sorted_contacts_from_db[i].lastname
+        assert sorted_contacts_from_home_page[i].firstname == sorted_contacts_from_db[i].firstname
+        assert sorted_contacts_from_home_page[i].address == contacts_from_db[i].address
+        assert sorted_contacts_from_home_page[i].all_emails_from_home_page == merge_emails_like_on_home_page(sorted_contacts_from_db[i])
+        assert sorted_contacts_from_home_page[i].all_phones_from_home_page == merge_phones_like_on_home_page(sorted_contacts_from_db[i])
+
     # compare home & edit pages
     # contacts_from_edit_page = app.contact.get_contacts_info_from_edit_page()
     # for i in range(len(contacts_from_home_page)):
