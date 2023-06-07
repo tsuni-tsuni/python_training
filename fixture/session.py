@@ -1,3 +1,6 @@
+from selenium.webdriver.common.by import By
+
+
 class SessionHelper:
 
     def __init__(self, app):
@@ -6,20 +9,20 @@ class SessionHelper:
     def login(self, username, password):
         wd = self.app.wd
         self.app.open_home_page()
-        wd.find_element_by_name("user").clear()
-        wd.find_element_by_name("user").send_keys(username)
-        wd.find_element_by_name("pass").clear()
-        wd.find_element_by_name("pass").send_keys(password)
-        wd.find_element_by_xpath("//input[@value='Login']").click()
+        wd.find_element(By.NAME, "username").clear()
+        wd.find_element(By.NAME, "username").send_keys(username)
+        wd.find_element(By.NAME, "password").clear()
+        wd.find_element(By.NAME, "password").send_keys(password)
+        wd.find_element(By.XPATH, "//input[@value='Login']").click()
 
     def logout(self):
         wd = self.app.wd
-        wd.find_element_by_link_text("Logout").click()
-        wd.find_element_by_name("user").click()
+        wd.find_element(By.LINK_TEXT, "Logout").click()
+        wd.find_element(By.NAME, "user").click()
 
     def is_logged_in(self):
         wd = self.app.wd
-        return len(wd.find_elements_by_link_text("Logout")) > 0
+        return len(wd.find_elements(By.LINK_TEXT, "Logout")) > 0
 
     def is_logged_in_as(self, username):
         wd = self.app.wd
@@ -27,7 +30,7 @@ class SessionHelper:
 
     def get_logged_user(self):
         wd = self.app.wd
-        return wd.find_element_by_xpath("//div[@id='top']/form/b").text[1:-1]
+        return wd.find_element(By.XPATH, "//div[@id='top']/form/b").text[1:-1]
 
     def ensure_login(self, username, password):
         wd = self.app.wd
